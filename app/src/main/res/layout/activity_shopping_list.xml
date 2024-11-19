@@ -6,71 +6,24 @@
     android:padding="16dp"
     android:background="@color/background_color">
 
-    <!-- Campo para ingresar el nombre de la lista -->
-    <EditText
-        android:id="@+id/editListName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Ingresa el nombre de la lista"
-        android:padding="10dp"
-        android:textSize="18sp"
-        android:textColor="#FFFFFF"
-    android:layout_marginTop="16dp" />
-
-    <!-- Campo para ingresar el nombre del producto -->
-    <EditText
-        android:id="@+id/editProductName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Ingresa un producto"
-        android:padding="10dp"
-        android:textSize="18sp"
-        android:textColor="#FFFFFF"
-    android:layout_marginTop="16dp" />
-
-    <!-- Botón para agregar producto -->
-    <Button
-        android:id="@+id/btnAddProduct"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Agregar Producto"
-        android:textColor="#FFFFFF"
-    android:backgroundTint="@color/button_color"
-    android:textSize="16sp"
-    android:textStyle="bold"
-    android:layout_marginTop="16dp" />
-
-    <!-- Botón para crear nueva lista -->
+    <!-- Botón para crear una nueva lista -->
     <Button
         android:id="@+id/btnCreateList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Crear Nueva Lista"
-        android:textColor="#FFFFFF"
-    android:backgroundTint="@color/button_color"
-    android:textSize="16sp"
-    android:textStyle="bold"
-    android:layout_marginTop="16dp" />
+        android:textColor="@color/button_text"
+        android:backgroundTint="@color/button_color"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
 
-    <!-- Botón para compartir la lista con otros usuarios -->
-    <Button
-        android:id="@+id/btnShareList"
+    <!-- ListView para mostrar las listas de compras -->
+    <ListView
+        android:id="@+id/listViewShoppingLists"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Compartir Lista"
-        android:textColor="#FFFFFF"
-    android:backgroundTint="@color/button_color"
-    android:textSize="16sp"
-    android:textStyle="bold"
-    android:layout_marginTop="16dp" />
-
-    <!-- ListView para mostrar los productos -->
-    <ListView
-        android:id="@+id/listViewProducts"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="24dp"
-        android:textColor="#FFFFFF"
-    android:divider="@android:color/darker_gray"
-    android:dividerHeight="1dp" />
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="1dp"
+        android:layout_marginTop="24dp" />
 </LinearLayout>
