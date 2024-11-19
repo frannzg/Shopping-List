@@ -4,56 +4,84 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:padding="15dp">
+    android:padding="16dp"
+    android:background="@color/background_color">
 
+    <!-- Título de la pantalla -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Registrarse"
-        android:textSize="25sp"
+        android:textSize="28sp"
         android:textStyle="bold"
+        android:textColor="@color/primary_text"
         android:gravity="center"
-        android:layout_marginBottom="20dp"/>
+        android:layout_marginBottom="24dp" />
 
+    <!-- Campo de correo electrónico -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
+
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/email"
             android:hint="Correo electrónico"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textColor="@color/primary_text"
+            android:textColorHint="@color/primary_text"
+            android:inputType="textEmailAddress"
+            android:backgroundTint="@color/primary_text" /> <!-- Color de fondo transparente -->
+
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Campo de contraseña -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp">
+
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/password"
             android:hint="Contraseña"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textColor="@color/primary_text"
+            android:textColorHint="@color/primary_text"
+            android:inputType="textPassword"
+            android:backgroundTint="@color/primary_text" /> <!-- Color de fondo transparente -->
+
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Barra de progreso -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:visibility="gone"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp" />
 
+    <!-- Botón de registro -->
     <Button
         android:id="@+id/btn_register"
         android:text="Registrarse"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="@color/button_color"
+        android:textColor="@color/button_text"
+        android:textStyle="bold" />
 
+    <!-- Enlace para iniciar sesión -->
     <TextView
         android:id="@+id/loginNow"
         android:text="¿Ya tienes cuenta? Inicia sesión"
-        android:textSize="20sp"
+        android:textSize="16sp"
+        android:textColor="@color/link_color"
         android:gravity="center"
-        android:layout_marginTop="20sp"
+        android:layout_marginTop="8dp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

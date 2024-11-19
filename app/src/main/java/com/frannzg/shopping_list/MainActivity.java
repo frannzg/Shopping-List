@@ -14,6 +14,7 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView userDetails;
     private Button btnLogout;
+    private Button goToShoppingListButton; // Botón para ir a la lista de compras
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
         userDetails = findViewById(R.id.user_details);
         btnLogout = findViewById(R.id.logout);
+        goToShoppingListButton = findViewById(R.id.goToShoppingList); // Inicializar el botón
 
         // Mostrar detalles del usuario
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
@@ -34,6 +36,12 @@ public class MainActivity extends AppCompatActivity {
             FirebaseAuth.getInstance().signOut();
             startActivity(new Intent(MainActivity.this, Login.class));
             finish();
+        });
+
+        // Acción de ir a la lista de compras
+        goToShoppingListButton.setOnClickListener(v -> {
+            // Iniciar ShoppingListActivity
+            startActivity(new Intent(MainActivity.this, ShoppingListActivity.class));
         });
     }
 }

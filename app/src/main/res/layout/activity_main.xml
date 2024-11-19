@@ -4,34 +4,42 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:gravity="center">
+    android:gravity="center"
+    android:background="@color/background_color">
 
-    <!-- Mostrar detalles del usuario -->
+    <!-- Título de la pantalla (Usuario Bienvenido) -->
     <TextView
         android:id="@+id/user_details"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Bienvenido, Usuario"
-        android:textSize="20sp"
+        android:textSize="24sp"
         android:textStyle="bold"
-        android:layout_marginBottom="20dp"/>
+        android:textColor="@color/primary_text"
+        android:gravity="center"
+        android:layout_marginBottom="24dp" />
 
-    <!-- Botón para logout -->
+    <!-- Botón de cerrar sesión -->
     <Button
         android:id="@+id/logout"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Cerrar sesión"
+        android:textColor="@color/button_text"
+        android:backgroundTint="@color/button_color"
         android:textSize="16sp"
-        android:layout_marginBottom="20dp"/>
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/>
 
-    <!-- Otros botones o elementos de la aplicación pueden ir aquí -->
-    <!-- Ejemplo de un botón para una funcionalidad adicional -->
+    <!-- Botón para ir a la lista de compras -->
     <Button
         android:id="@+id/goToShoppingList"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Ir a la lista de compras"
-        android:textSize="16sp"/>
+        android:textColor="@color/button_text"
+        android:backgroundTint="@color/button_color"
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
 </LinearLayout>

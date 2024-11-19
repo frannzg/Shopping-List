@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "87888012774",
+    "firebase_url": "https://shopping-list-fc023-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "shopping-list-fc023",
     "storage_bucket": "shopping-list-fc023.firebasestorage.app"
   },

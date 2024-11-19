@@ -33,6 +33,11 @@
             android:exported="true">
 
         </activity>
+        <activity android:name=".ShoppingListActivity"></activity>
+
+
+
+
     </application>
 
 </manifest>
