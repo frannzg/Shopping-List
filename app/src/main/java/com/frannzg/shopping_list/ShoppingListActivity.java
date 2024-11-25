@@ -1,5 +1,6 @@
 package com.frannzg.shopping_list;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -17,12 +18,14 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ShoppingListActivity extends AppCompatActivity {
 
     private Button btnCreateList;
     private ListView listViewShoppingLists;
     private ArrayList<String> shoppingListNames;
+    private ArrayList<String> shoppingListIds;
     private ArrayAdapter<String> adapter;
     private FirebaseAuth mAuth;
     private DatabaseReference shoppingListRef;
@@ -36,6 +39,7 @@ public class ShoppingListActivity extends AppCompatActivity {
         btnCreateList = findViewById(R.id.btnCreateList);
         listViewShoppingLists = findViewById(R.id.listViewShoppingLists);
         shoppingListNames = new ArrayList<>();
+        shoppingListIds = new ArrayList<>();
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, shoppingListNames);
         listViewShoppingLists.setAdapter(adapter);
 
@@ -62,20 +66,31 @@ public class ShoppingListActivity extends AppCompatActivity {
             }
         });
 
+        // Configurar clics en las listas
+        listViewShoppingLists.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedListId = shoppingListIds.get(position); // Obtener el ID de la lista seleccionada
+            Intent intent = new Intent(ShoppingListActivity.this, ManageProductsActivity.class);
+            intent.putExtra("LIST_ID", selectedListId);
+            startActivity(intent); // Redirigir a la nueva actividad
+        });
+
         // Cargar las listas de compras del usuario autenticado
         loadShoppingLists();
     }
 
     private void loadShoppingLists() {
         shoppingListNames.clear();
+        shoppingListIds.clear();
         shoppingListRef.child(mAuth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         String listName = snapshot.child("name").getValue(String.class);
-                        if (listName != null) {
+                        String listId = snapshot.getKey(); // Obtener el ID de la lista
+                        if (listName != null && listId != null) {
                             shoppingListNames.add(listName);
+                            shoppingListIds.add(listId);
                         }
                     }
                     adapter.notifyDataSetChanged();

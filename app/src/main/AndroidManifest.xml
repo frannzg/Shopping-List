@@ -28,6 +28,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".ManageProductsActivity" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
