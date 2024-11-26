@@ -7,10 +7,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
-import android.widget.AdapterView;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -22,8 +20,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-
 public class ShoppingListActivity extends AppCompatActivity {
 
     private Button btnCreateList;
@@ -44,7 +40,9 @@ public class ShoppingListActivity extends AppCompatActivity {
         listViewShoppingLists = findViewById(R.id.listViewShoppingLists);
         shoppingListNames = new ArrayList<>();
         shoppingListIds = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, shoppingListNames);
+
+        // Usar el layout personalizado para la lista
+        adapter = new ArrayAdapter<>(this, R.layout.list_item_white_text, shoppingListNames);
         listViewShoppingLists.setAdapter(adapter);
 
         // Inicializar Firebase
@@ -108,7 +106,6 @@ public class ShoppingListActivity extends AppCompatActivity {
         });
     }
 
-    // Mostrar opciones para editar, eliminar o compartir la lista
     private void showOptionsDialog(String listId, int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Opciones de lista");
@@ -118,7 +115,10 @@ public class ShoppingListActivity extends AppCompatActivity {
                 (dialog, which) -> {
                     switch (which) {
                         case 0: // Editar
-                            editShoppingList(listId);
+                            // Redirigir a la actividad para gestionar los productos de la lista
+                            Intent intent = new Intent(ShoppingListActivity.this, ManageProductsActivity.class);
+                            intent.putExtra("LIST_ID", listId); // Pasar el ID de la lista
+                            startActivity(intent);
                             break;
                         case 1: // Eliminar
                             deleteShoppingList(listId, position);
@@ -135,15 +135,6 @@ public class ShoppingListActivity extends AppCompatActivity {
         builder.show();
     }
 
-    // Editar una lista
-    private void editShoppingList(String listId) {
-        // Redirigir a una actividad para editar la lista
-        Intent intent = new Intent(ShoppingListActivity.this, EditListActivity.class);
-        intent.putExtra("LIST_ID", listId);
-        startActivity(intent);
-    }
-
-    // Eliminar una lista
     private void deleteShoppingList(String listId, int position) {
         shoppingListRef.child(mAuth.getCurrentUser().getUid()).child(listId).removeValue()
                 .addOnCompleteListener(task -> {
@@ -158,7 +149,6 @@ public class ShoppingListActivity extends AppCompatActivity {
                 });
     }
 
-    // Compartir la lista por WhatsApp
     private void shareShoppingList(String listId) {
         String listName = shoppingListNames.get(shoppingListIds.indexOf(listId));
         String shareText = "Lista de compra: " + listName + "\n\n¡Compra lo necesario!";
