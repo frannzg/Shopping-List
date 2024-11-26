@@ -39,7 +39,9 @@ public class ManageProductsActivity extends AppCompatActivity {
         btnAddProduct = findViewById(R.id.btnAddProduct);
         listViewProducts = findViewById(R.id.listViewProducts);
         productNames = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, productNames);
+
+        // Cambiar a diseño personalizado
+        adapter = new ArrayAdapter<>(this, R.layout.list_item_white_text, productNames);
         listViewProducts.setAdapter(adapter);
 
         // Obtener el ID de la lista desde el Intent
