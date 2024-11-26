@@ -77,17 +77,17 @@ public class ManageProductsActivity extends AppCompatActivity {
     }
 
     private void loadProducts() {
-        productNames.clear();
+        productNames.clear();  // Limpiar la lista de productos
         productRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
-                    String productName = snapshot.getValue(String.class);
+                    String productName = snapshot.getValue(String.class);  // Obtener nombre del producto
                     if (productName != null) {
-                        productNames.add(productName);
+                        productNames.add(productName);  // Añadirlo a la lista
                     }
                 }
-                adapter.notifyDataSetChanged();
+                adapter.notifyDataSetChanged();  // Actualizar el adaptador
             }
 
             @Override
