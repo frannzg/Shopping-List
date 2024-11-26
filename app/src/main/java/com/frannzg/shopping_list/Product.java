@@ -2,36 +2,42 @@ package com.frannzg.shopping_list;
 
 public class Product {
 
-    private String name;
-    private boolean isChecked;
+    private String id;  // ID único del producto
+    private String name;  // Nombre del producto
+    private boolean bought;  // Estado de si ha sido comprado
 
-    // Constructor vacío
-    public Product() {
-    }
+    // Constructor vacío necesario para Firebase
+    public Product() {}
 
     // Constructor con parámetros
-    public Product(String name, boolean isChecked) {
+    public Product(String id, String name, boolean bought) {
+        this.id = id;
         this.name = name;
-        this.isChecked = isChecked;
+        this.bought = bought;
     }
 
-    // Getter para name
+    // Getters y setters
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
 
-    // Setter para name
     public void setName(String name) {
         this.name = name;
     }
 
-    // Getter para isChecked
-    public boolean isChecked() {
-        return isChecked;
+    public boolean isBought() {
+        return bought;
     }
 
-    // Setter para isChecked
-    public void setChecked(boolean checked) {
-        isChecked = checked;
+    public void setBought(boolean bought) {
+        this.bought = bought;
     }
 }

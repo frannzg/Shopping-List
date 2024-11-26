@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.frannzg.shopping_list">
 
+    <!-- Permisos necesarios -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -14,32 +17,43 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Material3.Light"
         tools:targetApi="31">
+
+        <!-- Actividad para el registro de usuarios -->
         <activity
             android:name=".Register"
             android:exported="false"
             android:theme="@style/Theme.Material3.Light.NoActionBar" />
+
+        <!-- Actividad de inicio de sesión -->
         <activity
             android:name=".Login"
             android:theme="@style/Theme.Material3.Light.NoActionBar"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name=".ManageProductsActivity" />
+        <!-- Actividad para gestionar los productos -->
+        <activity
+            android:name=".ManageProductsActivity"
+            android:exported="true"
+            android:label="Gestionar Productos" />
 
+        <!-- Actividad principal, probablemente para la pantalla inicial -->
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:label="Pantalla Principal" />
 
-        </activity>
-        <activity android:name=".ShoppingListActivity"></activity>
+        <!-- Actividad para la lista de compras -->
+        <activity
+            android:name=".ShoppingListActivity"
+            android:exported="true"
+            android:label="Lista de Compras" />
 
-
-
+        <!-- Si tienes más actividades puedes agregar aquí -->
 
     </application>
 

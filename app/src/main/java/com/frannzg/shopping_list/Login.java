@@ -3,7 +3,6 @@ package com.frannzg.shopping_list;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -13,6 +12,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class Login extends AppCompatActivity {
 
@@ -20,6 +20,8 @@ public class Login extends AppCompatActivity {
     private Button btnLogin;
     private ProgressBar progressBar;
     private TextView registerNow;
+
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,13 +34,15 @@ public class Login extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         registerNow = findViewById(R.id.registerNow);
 
+        mAuth = FirebaseAuth.getInstance();
+
         // Redirigir a la pantalla de registro
         registerNow.setOnClickListener(v -> {
             startActivity(new Intent(Login.this, Register.class));
             finish();
         });
 
-        // Logueo del usuario
+        // Botón de inicio de sesión
         btnLogin.setOnClickListener(v -> {
             String email = emailEditText.getText().toString().trim();
             String password = passwordEditText.getText().toString().trim();
@@ -50,43 +54,39 @@ public class Login extends AppCompatActivity {
                 return;
             }
 
-            if (password.isEmpty() || password.length() < 6) {
-                passwordEditText.setError("La contraseña debe tener al menos 6 caracteres");
+            if (password.isEmpty()) {
+                passwordEditText.setError("Por favor, introduce tu contraseña");
                 passwordEditText.requestFocus();
                 return;
             }
 
-            // Ocultar el teclado al hacer clic en el botón de login
-            hideKeyboard();
-
             progressBar.setVisibility(View.VISIBLE);
 
-            FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
+            // Intentar iniciar sesión
+            mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(task -> {
                         progressBar.setVisibility(View.GONE);
                         if (task.isSuccessful()) {
-                            // Login exitoso
-                            startActivity(new Intent(Login.this, MainActivity.class));
-                            finish();
+                            FirebaseUser user = mAuth.getCurrentUser();
+
+                            if (user != null && user.isEmailVerified()) {
+                                // Si el correo está verificado, permitir el acceso
+                                Toast.makeText(Login.this, "Inicio de sesión exitoso", Toast.LENGTH_LONG).show();
+                                startActivity(new Intent(Login.this, MainActivity.class));
+                                finish();
+                            } else {
+                                // Bloquear el acceso si no está verificado
+                                if (user != null) {
+                                    user.sendEmailVerification(); // Reenviar correo de verificación
+                                }
+                                Toast.makeText(Login.this, "Debes verificar tu correo electrónico antes de iniciar sesión", Toast.LENGTH_LONG).show();
+                                FirebaseAuth.getInstance().signOut(); // Cerrar sesión automáticamente
+                            }
                         } else {
-                            // Error en el login
+                            // Error en la autenticación
                             Toast.makeText(Login.this, "Error: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                         }
                     });
         });
-
-        // Poner foco en el primer campo (email) cuando se inicia la actividad
-        emailEditText.requestFocus();
-    }
-
-    // Método para ocultar el teclado
-    private void hideKeyboard() {
-        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        if (imm != null) {
-            View view = this.getCurrentFocus();
-            if (view != null) {
-                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-            }
-        }
     }
 }

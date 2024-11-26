@@ -12,6 +12,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class Register extends AppCompatActivity {
 
@@ -61,9 +62,20 @@ public class Register extends AppCompatActivity {
                     .addOnCompleteListener(task -> {
                         progressBar.setVisibility(View.GONE);
                         if (task.isSuccessful()) {
-                            Toast.makeText(Register.this, "Usuario registrado con éxito", Toast.LENGTH_LONG).show();
-                            startActivity(new Intent(Register.this, Login.class));
-                            finish();
+                            // Enviar correo de verificación
+                            FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                            if (user != null) {
+                                user.sendEmailVerification().addOnCompleteListener(emailTask -> {
+                                    if (emailTask.isSuccessful()) {
+                                        Toast.makeText(Register.this, "Registro exitoso. Verifica tu correo antes de iniciar sesión.", Toast.LENGTH_LONG).show();
+                                        FirebaseAuth.getInstance().signOut(); // Cerrar sesión tras el registro
+                                        startActivity(new Intent(Register.this, Login.class));
+                                        finish();
+                                    } else {
+                                        Toast.makeText(Register.this, "Error al enviar el correo de verificación: " + emailTask.getException().getMessage(), Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
                         } else {
                             Toast.makeText(Register.this, "Error: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                         }
