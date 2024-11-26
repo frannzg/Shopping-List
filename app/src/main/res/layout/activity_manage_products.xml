@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/background_color">
 
     <!-- Campo de texto para el nombre del producto -->
     <EditText
@@ -12,20 +13,30 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Nombre del producto"
-        android:inputType="text" />
+        android:inputType="text"
+        android:textColorHint="@color/hint_text"
+        android:layout_marginBottom="16dp"
+        android:padding="12dp"/>
 
     <!-- Botón para añadir producto -->
     <Button
         android:id="@+id/btnAddProduct"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Añadir producto" />
+        android:text="Añadir producto"
+        android:textColor="@color/button_text"
+        android:backgroundTint="@color/button_color"
+        android:textSize="16sp"
+        android:layout_marginBottom="16dp"
+        android:textStyle="bold" />
 
     <!-- Lista de productos -->
     <ListView
         android:id="@+id/listViewProducts"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:divider="@android:color/darker_gray"
-        android:dividerHeight="1dp" />
+        android:dividerHeight="1dp"
+        android:padding="8dp"/>
 </LinearLayout>

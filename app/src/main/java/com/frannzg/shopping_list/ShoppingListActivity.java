@@ -7,6 +7,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -18,8 +20,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-
 public class ShoppingListActivity extends AppCompatActivity {
 
     private Button btnCreateList;
@@ -40,7 +40,9 @@ public class ShoppingListActivity extends AppCompatActivity {
         listViewShoppingLists = findViewById(R.id.listViewShoppingLists);
         shoppingListNames = new ArrayList<>();
         shoppingListIds = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, shoppingListNames);
+
+        // Usar el layout personalizado para la lista
+        adapter = new ArrayAdapter<>(this, R.layout.list_item_white_text, shoppingListNames);
         listViewShoppingLists.setAdapter(adapter);
 
         // Inicializar Firebase
@@ -69,9 +71,7 @@ public class ShoppingListActivity extends AppCompatActivity {
         // Configurar clics en las listas
         listViewShoppingLists.setOnItemClickListener((parent, view, position, id) -> {
             String selectedListId = shoppingListIds.get(position); // Obtener el ID de la lista seleccionada
-            Intent intent = new Intent(ShoppingListActivity.this, ManageProductsActivity.class);
-            intent.putExtra("LIST_ID", selectedListId);
-            startActivity(intent); // Redirigir a la nueva actividad
+            showOptionsDialog(selectedListId, position); // Mostrar las opciones de la lista seleccionada
         });
 
         // Cargar las listas de compras del usuario autenticado
@@ -104,5 +104,59 @@ public class ShoppingListActivity extends AppCompatActivity {
                 Toast.makeText(ShoppingListActivity.this, "Error al cargar las listas", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void showOptionsDialog(String listId, int position) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Opciones de lista");
+
+        // Opciones del dialogo
+        builder.setItems(new CharSequence[]{"Editar", "Eliminar", "Compartir por WhatsApp", "Atrás"},
+                (dialog, which) -> {
+                    switch (which) {
+                        case 0: // Editar
+                            // Redirigir a la actividad para gestionar los productos de la lista
+                            Intent intent = new Intent(ShoppingListActivity.this, ManageProductsActivity.class);
+                            intent.putExtra("LIST_ID", listId); // Pasar el ID de la lista
+                            startActivity(intent);
+                            break;
+                        case 1: // Eliminar
+                            deleteShoppingList(listId, position);
+                            break;
+                        case 2: // Compartir
+                            shareShoppingList(listId);
+                            break;
+                        case 3: // Atrás
+                            dialog.dismiss();
+                            break;
+                    }
+                });
+
+        builder.show();
+    }
+
+    private void deleteShoppingList(String listId, int position) {
+        shoppingListRef.child(mAuth.getCurrentUser().getUid()).child(listId).removeValue()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        shoppingListNames.remove(position);
+                        shoppingListIds.remove(position);
+                        adapter.notifyDataSetChanged();
+                        Toast.makeText(ShoppingListActivity.this, "Lista eliminada", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(ShoppingListActivity.this, "Error al eliminar la lista", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void shareShoppingList(String listId) {
+        String listName = shoppingListNames.get(shoppingListIds.indexOf(listId));
+        String shareText = "Lista de compra: " + listName + "\n\n¡Compra lo necesario!";
+
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TEXT, shareText);
+        intent.setPackage("com.whatsapp"); // Especificar WhatsApp
+        startActivity(Intent.createChooser(intent, "Compartir lista por"));
     }
 }

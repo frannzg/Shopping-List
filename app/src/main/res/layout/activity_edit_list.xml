@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/background_color">
+
+    <!-- Campo de texto para el nombre de la lista -->
+    <EditText
+        android:id="@+id/editTextListName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nombre de la lista"
+        android:inputType="text"
+        android:textColorHint="@color/hint_text"
+        android:layout_marginBottom="16dp"
+        android:padding="12dp"
+        />
+
+    <!-- Botón para guardar los cambios -->
+    <Button
+        android:id="@+id/btnSaveList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Guardar cambios"
+        android:textColor="@color/button_text"
+        android:backgroundTint="@color/button_color"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+</LinearLayout>
