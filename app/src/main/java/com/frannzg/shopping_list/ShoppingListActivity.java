@@ -2,29 +2,31 @@ package com.frannzg.shopping_list;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
+import android.widget.AdapterView;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ShoppingListActivity extends AppCompatActivity {
 
-    private Button btnCreateList, btnImportList;
+    private Button btnCreateList;
     private ListView listViewShoppingLists;
     private ArrayList<String> shoppingListNames;
     private ArrayList<String> shoppingListIds;
@@ -39,32 +41,43 @@ public class ShoppingListActivity extends AppCompatActivity {
 
         // Inicializar los elementos de la interfaz
         btnCreateList = findViewById(R.id.btnCreateList);
-        btnImportList = findViewById(R.id.btnImportList);
         listViewShoppingLists = findViewById(R.id.listViewShoppingLists);
         shoppingListNames = new ArrayList<>();
         shoppingListIds = new ArrayList<>();
-
-        adapter = new ArrayAdapter<>(this, R.layout.list_item_white_text, shoppingListNames);
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, shoppingListNames);
         listViewShoppingLists.setAdapter(adapter);
 
         // Inicializar Firebase
         mAuth = FirebaseAuth.getInstance();
         shoppingListRef = FirebaseDatabase.getInstance().getReference("shopping_list");
 
-        // Acción del botón para crear una nueva lista
-        btnCreateList.setOnClickListener(v -> showCreateListDialog());
+        // Acciones del botón para crear una nueva lista
+        btnCreateList.setOnClickListener(v -> {
+            // Crear una nueva lista
+            String listName = "Lista de compra " + (shoppingListNames.size() + 1); // Ejemplo de nombre para la lista
+            String listId = shoppingListRef.push().getKey();
 
-        // Acción del botón para importar una lista
-        btnImportList.setOnClickListener(v -> showImportListDialog());
-
-        // Cargar listas existentes
-        loadShoppingLists();
-
-        // Configurar clic en las listas
-        listViewShoppingLists.setOnItemClickListener((parent, view, position, id) -> {
-            String selectedListId = shoppingListIds.get(position);
-            showOptionsDialog(selectedListId, shoppingListNames.get(position), position);
+            if (listId != null) {
+                shoppingListRef.child(mAuth.getCurrentUser().getUid()).child(listId).child("name").setValue(listName)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(ShoppingListActivity.this, "Lista creada", Toast.LENGTH_SHORT).show();
+                                loadShoppingLists(); // Cargar las listas después de crear una nueva
+                            } else {
+                                Toast.makeText(ShoppingListActivity.this, "Error al crear la lista", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            }
         });
+
+        // Configurar clics en las listas
+        listViewShoppingLists.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedListId = shoppingListIds.get(position); // Obtener el ID de la lista seleccionada
+            showOptionsDialog(selectedListId, position); // Mostrar las opciones de la lista seleccionada
+        });
+
+        // Cargar las listas de compras del usuario autenticado
+        loadShoppingLists();
     }
 
     private void loadShoppingLists() {
@@ -76,7 +89,7 @@ public class ShoppingListActivity extends AppCompatActivity {
                 if (dataSnapshot.exists()) {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         String listName = snapshot.child("name").getValue(String.class);
-                        String listId = snapshot.getKey();
+                        String listId = snapshot.getKey(); // Obtener el ID de la lista
                         if (listName != null && listId != null) {
                             shoppingListNames.add(listName);
                             shoppingListIds.add(listId);
@@ -95,59 +108,25 @@ public class ShoppingListActivity extends AppCompatActivity {
         });
     }
 
-    private void showCreateListDialog() {
-        final EditText input = new EditText(this);
-        input.setHint("Nombre de la lista");
-
+    // Mostrar opciones para editar, eliminar o compartir la lista
+    private void showOptionsDialog(String listId, int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Nueva lista de compras")
-                .setView(input)
-                .setPositiveButton("Crear", (dialog, which) -> {
-                    String listName = input.getText().toString().trim();
-                    if (!listName.isEmpty()) {
-                        createNewShoppingList(listName);
-                    } else {
-                        Toast.makeText(ShoppingListActivity.this, "Por favor, ingresa un nombre válido", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
-                .show();
-    }
+        builder.setTitle("Opciones de lista");
 
-    private void createNewShoppingList(String listName) {
-        String listId = shoppingListRef.push().getKey();
-        if (listId != null) {
-            shoppingListRef.child(mAuth.getCurrentUser().getUid()).child(listId).child("name").setValue(listName)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(ShoppingListActivity.this, "Lista creada", Toast.LENGTH_SHORT).show();
-                            loadShoppingLists();
-                        } else {
-                            Toast.makeText(ShoppingListActivity.this, "Error al crear la lista", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        }
-    }
-
-    private void showOptionsDialog(String listId, String listName, int position) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Opciones de lista: " + listName);
-
-        builder.setItems(new CharSequence[]{"Editar Productos", "Eliminar", "Compartir por Texto", "Atrás"},
+        // Opciones del dialogo
+        builder.setItems(new CharSequence[]{"Editar", "Eliminar", "Compartir por WhatsApp", "Atrás"},
                 (dialog, which) -> {
                     switch (which) {
-                        case 0:
-                            Intent intent1 = new Intent(ShoppingListActivity.this, ManageProductsActivity.class);
-                            intent1.putExtra("LIST_ID", listId);
-                            startActivity(intent1);
+                        case 0: // Editar
+                            editShoppingList(listId);
                             break;
-                        case 1:
+                        case 1: // Eliminar
                             deleteShoppingList(listId, position);
                             break;
-                        case 2:
+                        case 2: // Compartir
                             shareShoppingList(listId);
                             break;
-                        case 3:
+                        case 3: // Atrás
                             dialog.dismiss();
                             break;
                     }
@@ -156,6 +135,15 @@ public class ShoppingListActivity extends AppCompatActivity {
         builder.show();
     }
 
+    // Editar una lista
+    private void editShoppingList(String listId) {
+        // Redirigir a una actividad para editar la lista
+        Intent intent = new Intent(ShoppingListActivity.this, EditListActivity.class);
+        intent.putExtra("LIST_ID", listId);
+        startActivity(intent);
+    }
+
+    // Eliminar una lista
     private void deleteShoppingList(String listId, int position) {
         shoppingListRef.child(mAuth.getCurrentUser().getUid()).child(listId).removeValue()
                 .addOnCompleteListener(task -> {
@@ -170,90 +158,15 @@ public class ShoppingListActivity extends AppCompatActivity {
                 });
     }
 
+    // Compartir la lista por WhatsApp
     private void shareShoppingList(String listId) {
-        String currentUserId = mAuth.getCurrentUser().getUid();
+        String listName = shoppingListNames.get(shoppingListIds.indexOf(listId));
+        String shareText = "Lista de compra: " + listName + "\n\n¡Compra lo necesario!";
 
-        // Añadir el ID del usuario actual en la lista compartida
-        shoppingListRef.child(currentUserId).child(listId).child("shared_with").child(currentUserId).setValue(true)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        String shareText = "ID de la lista: " + listId + "\n" +
-                                "Copia este ID y pégalo en la opción de 'Importar Lista' para verla.";
-
-                        Intent intent = new Intent(Intent.ACTION_SEND);
-                        intent.setType("text/plain");
-                        intent.putExtra(Intent.EXTRA_TEXT, shareText);
-                        startActivity(Intent.createChooser(intent, "Compartir lista"));
-                        Toast.makeText(ShoppingListActivity.this, "Lista compartida", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(ShoppingListActivity.this, "Error al compartir la lista", Toast.LENGTH_SHORT).show();
-                    }
-                });
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TEXT, shareText);
+        intent.setPackage("com.whatsapp"); // Especificar WhatsApp
+        startActivity(Intent.createChooser(intent, "Compartir lista por"));
     }
-
-    private void showImportListDialog() {
-        final EditText input = new EditText(this);
-        input.setHint("ID de la lista");
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Importar lista de compras")
-                .setView(input)
-                .setPositiveButton("Importar", (dialog, which) -> {
-                    String listId = input.getText().toString().trim();
-                    if (!listId.isEmpty()) {
-                        importShoppingList(listId);
-                    } else {
-                        Toast.makeText(ShoppingListActivity.this, "Por favor, ingresa un ID válido", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
-                .show();
-    }
-
-    private void importShoppingList(String listId) {
-        String currentUserId = mAuth.getCurrentUser().getUid();
-
-        // Buscar la lista en la base de datos por el ID
-        shoppingListRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                boolean listFound = false;
-
-                // Recorrer todos los usuarios para buscar la lista compartida
-                for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
-                    if (userSnapshot.hasChild(listId)) {
-                        DataSnapshot listSnapshot = userSnapshot.child(listId);
-                        String listName = listSnapshot.child("name").getValue(String.class);
-
-                        // Verificar si la lista está compartida con el usuario actual
-                        if (listName != null && listSnapshot.child("shared_with").hasChild(currentUserId)) {
-                            // Si la lista está compartida, importar la lista
-                            shoppingListRef.child(currentUserId).child(listId)
-                                    .setValue(listSnapshot.getValue())
-                                    .addOnCompleteListener(task -> {
-                                        if (task.isSuccessful()) {
-                                            Toast.makeText(ShoppingListActivity.this, "Lista importada: " + listName, Toast.LENGTH_SHORT).show();
-                                            loadShoppingLists();
-                                        } else {
-                                            Toast.makeText(ShoppingListActivity.this, "Error al importar la lista", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                            listFound = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (!listFound) {
-                    Toast.makeText(ShoppingListActivity.this, "ID de lista no encontrado o no tienes permiso para importarla", Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(ShoppingListActivity.this, "Error al buscar la lista", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
 }
