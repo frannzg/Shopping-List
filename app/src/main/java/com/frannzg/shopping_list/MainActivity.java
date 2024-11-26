@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Inicializar vistas
         userDetails = findViewById(R.id.user_details);
         btnLogout = findViewById(R.id.logout);
         goToShoppingListButton = findViewById(R.id.goToShoppingList); // Inicializar el botón
