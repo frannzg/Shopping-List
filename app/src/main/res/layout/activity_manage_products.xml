@@ -1,42 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="@color/background_color">
+    android:padding="16dp">
 
-    <!-- Campo de texto para el nombre del producto -->
+    <!-- EditText para ingresar el nombre del producto -->
     <EditText
         android:id="@+id/editTextProductName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Nombre del producto"
-        android:inputType="text"
-        android:textColorHint="@color/hint_text"
-        android:layout_marginBottom="16dp"
-        android:padding="12dp"/>
+        android:hint="Nombre del producto" />
 
-    <!-- Botón para añadir producto -->
+    <!-- Botón para añadir un nuevo producto -->
     <Button
         android:id="@+id/btnAddProduct"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Añadir producto"
-        android:textColor="@color/button_text"
-        android:backgroundTint="@color/button_color"
-        android:textSize="16sp"
-        android:layout_marginBottom="16dp"
-        android:textStyle="bold" />
+        android:text="Añadir producto" />
 
-    <!-- Lista de productos -->
+    <!-- ListView para mostrar los productos -->
     <ListView
         android:id="@+id/listViewProducts"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:divider="@android:color/darker_gray"
-        android:dividerHeight="1dp"
-        android:padding="8dp"/>
+        android:layout_height="match_parent" />
+
 </LinearLayout>
