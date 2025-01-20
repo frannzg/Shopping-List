@@ -1,37 +1,29 @@
 package com.frannzg.shopping_list;
 
 public class Product {
-
     private String name;
-    private boolean isChecked;
+    private boolean isBought;
 
-    // Constructor vacío
-    public Product() {
-    }
-
-    // Constructor con parámetros
-    public Product(String name, boolean isChecked) {
+    // Constructor
+    public Product(String name, boolean isBought) {
         this.name = name;
-        this.isChecked = isChecked;
+        this.isBought = isBought;
     }
 
-    // Getter para name
+    // Getters y setters
     public String getName() {
         return name;
     }
 
-    // Setter para name
     public void setName(String name) {
         this.name = name;
     }
 
-    // Getter para isChecked
-    public boolean isChecked() {
-        return isChecked;
+    public boolean isBought() {
+        return isBought;
     }
 
-    // Setter para isChecked
-    public void setChecked(boolean checked) {
-        isChecked = checked;
+    public void setBought(boolean bought) {
+        isBought = bought;
     }
 }

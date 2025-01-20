@@ -1,5 +1,6 @@
 package com.frannzg.shopping_list;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -56,6 +57,17 @@ public class ManageProductsActivity extends AppCompatActivity {
 
         // Añadir nuevo producto
         btnAddProduct.setOnClickListener(v -> addProduct());
+
+        // Al hacer clic en un producto, abrir ProductItemActivity
+        listViewProducts.setOnItemClickListener((parent, view, position, id) -> {
+            String productName = productNames.get(position); // Obtener el nombre del producto
+            String productId = productRef.push().getKey(); // Obtener el ID del producto
+            Intent intent = new Intent(ManageProductsActivity.this, ProductItemActivity.class);
+            intent.putExtra("PRODUCT_ID", productId);
+            intent.putExtra("PRODUCT_NAME", productName);
+            intent.putExtra("LIST_ID", listId); // Pasar el ID de la lista
+            startActivity(intent); // Iniciar la actividad ProductItemActivity
+        });
     }
 
     private void addProduct() {
