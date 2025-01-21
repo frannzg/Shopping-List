@@ -1,6 +1,7 @@
 package com.frannzg.shopping_list;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -149,14 +150,73 @@ public class ShoppingListActivity extends AppCompatActivity {
                 });
     }
 
-    private void shareShoppingList(String listId) {
-        String listName = shoppingListNames.get(shoppingListIds.indexOf(listId));
-        String shareText = "Lista de compra: " + listName + "\n\n¡Compra lo necesario!";
+    // Compartir llistes
 
-        Intent intent = new Intent(Intent.ACTION_SEND);
-        intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_TEXT, shareText);
-        intent.setPackage("com.whatsapp"); // Especificar WhatsApp
-        startActivity(Intent.createChooser(intent, "Compartir lista por"));
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleIntent(intent);
     }
+
+    private void handleIntent(Intent intent) {
+        Uri data = intent.getData();
+        if (data != null) {
+            String listId = data.getLastPathSegment();
+            loadShoppingList(listId);
+        }
+    }
+
+    private void loadShoppingList(String listId) {
+        DatabaseReference listRef = FirebaseDatabase.getInstance().getReference("shopping_list").child(listId);
+        listRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.exists()) {
+                    String listName = dataSnapshot.child("name").getValue(String.class);
+                    // Cargar los productos de la lista y actualizar la interfaz de usuario
+                } else {
+                    Toast.makeText(ShoppingListActivity.this, "Lista no encontrada", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Toast.makeText(ShoppingListActivity.this, "Error al cargar la lista", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void shareShoppingList(String listId) {
+        // Obtener el nombre de la lista desde Firebase
+        shoppingListRef.child(mAuth.getCurrentUser().getUid()).child(listId).child("name")
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.exists()) {
+                            String listName = dataSnapshot.getValue(String.class);
+                            String shareText = "Lista de compra: " + listName + "\n\n¡Compra lo necesario!\n" +
+                                    "Para ver la lista, haz clic en el siguiente enlace: https://shoppinglist.com/lista/" + listId;
+
+                            Intent intent = new Intent(Intent.ACTION_SEND);
+                            intent.setType("text/plain");
+                            intent.putExtra(Intent.EXTRA_TEXT, shareText);
+                            intent.setPackage("com.whatsapp"); // Especificar WhatsApp
+                            startActivity(Intent.createChooser(intent, "Compartir lista por"));
+                        } else {
+                            Toast.makeText(ShoppingListActivity.this, "Lista no encontrada", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Toast.makeText(ShoppingListActivity.this, "Error al cargar el nombre de la lista", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+
+
+
+
 }
