@@ -51,7 +51,16 @@
         <activity
             android:name=".ShoppingListActivity"
             android:exported="true"
-            android:label="Lista de Compras" />
+            android:label="Lista de Compras">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="shoppinglist.com" android:pathPrefix="/lista/" />
+            </intent-filter>
+        </activity>
+
+
 
         <!-- Si tienes más actividades puedes agregar aquí -->
 
