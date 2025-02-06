@@ -60,6 +60,11 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".EditListActivity"
+            android:exported="true"
+            android:label="Editar Lista" />
+
 
 
         <!-- Si tienes más actividades puedes agregar aquí -->
