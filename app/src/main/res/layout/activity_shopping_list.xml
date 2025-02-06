@@ -20,10 +20,10 @@
 
     <!-- Botón para importar lista -->
     <Button
-        android:id="@+id/btnExportList"
+        android:id="@+id/btnImportList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Exportar Lista"
+        android:text="Importar Lista"
         android:textColor="@color/button_text"
         android:backgroundTint="@color/button_color"
         android:textSize="16sp"
