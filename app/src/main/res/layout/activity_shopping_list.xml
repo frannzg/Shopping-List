@@ -16,6 +16,18 @@
         android:backgroundTint="@color/button_color"
         android:textSize="16sp"
         android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Botón para importar lista -->
+    <Button
+        android:id="@+id/btnImportList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Importar Lista"
+        android:textColor="@color/button_text"
+        android:backgroundTint="@color/button_color"
+        android:textSize="16sp"
+        android:textStyle="bold"
         android:layout_marginBottom="16dp" />
 
     <!-- ListView para mostrar las listas de compras -->
