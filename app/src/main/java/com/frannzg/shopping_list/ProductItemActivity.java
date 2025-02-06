@@ -1,5 +1,6 @@
 package com.frannzg.shopping_list;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -21,10 +22,11 @@ public class ProductItemActivity extends AppCompatActivity {
     private DatabaseReference productRef;
     private String productId, productName, listId;
 
+    @SuppressLint("WrongViewCast")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_product_item);
+        setContentView(R.layout.product_item);
 
         // Obtener los datos del producto desde el Intent
         productName = getIntent().getStringExtra("PRODUCT_NAME");
@@ -32,9 +34,9 @@ public class ProductItemActivity extends AppCompatActivity {
         listId = getIntent().getStringExtra("LIST_ID");
 
         // Inicializar los elementos de la interfaz
-        textViewProductName = findViewById(R.id.productName);
-        checkBoxBought = findViewById(R.id.checkboxBought);
-        btnDelete = findViewById(R.id.btnDelete);
+        textViewProductName = findViewById(R.id.textViewProductName);
+        checkBoxBought = findViewById(R.id.checkBoxBought);
+        btnDelete = findViewById(R.id.buttonDelete);
 
         // Mostrar el nombre del producto
         textViewProductName.setText(productName);
