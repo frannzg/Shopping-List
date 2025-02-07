@@ -1,5 +1,6 @@
 package com.frannzg.shopping_list;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,17 +15,23 @@ import android.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 public class ShoppingListActivity extends AppCompatActivity {
 
-    private Button btnCreateList, btnImportList;
+    private Button btnCreateList, btnImportList, btnExportList;
     private ListView listViewShoppingLists;
     private ArrayList<String> shoppingListNames;
     private ArrayList<String> shoppingListIds;
@@ -39,47 +46,69 @@ public class ShoppingListActivity extends AppCompatActivity {
 
         // Inicializar los elementos de la interfaz
         btnCreateList = findViewById(R.id.btnCreateList);
-        btnImportList = findViewById(R.id.btnImportList);
+        btnExportList = findViewById(R.id.btnExportList);
         listViewShoppingLists = findViewById(R.id.listViewShoppingLists);
         shoppingListNames = new ArrayList<>();
         shoppingListIds = new ArrayList<>();
 
+        // Configurar el adaptador para mostrar las listas en la ListView
         adapter = new ArrayAdapter<>(this, R.layout.list_item_white_text, shoppingListNames);
         listViewShoppingLists.setAdapter(adapter);
 
-        // Inicializar Firebase
+        // Inicializar Firebase Auth y la referencia a la base de datos
         mAuth = FirebaseAuth.getInstance();
         shoppingListRef = FirebaseDatabase.getInstance().getReference("shopping_list");
 
         // Acción del botón para crear una nueva lista
         btnCreateList.setOnClickListener(v -> showCreateListDialog());
 
-        // Acción del botón para importar una lista
-        btnImportList.setOnClickListener(v -> showImportListDialog());
+        // Acción del botón para exportar listas
+        btnExportList.setOnClickListener(v -> {
+            if (shoppingListIds.isEmpty()) {
+                Toast.makeText(ShoppingListActivity.this, "No hay listas para exportar", Toast.LENGTH_SHORT).show();
+            } else {
+                showSelectListDialog();
+            }
+        });
 
-        // Cargar listas existentes
+        // Cargar listas existentes desde Firebase
         loadShoppingLists();
 
-        // Configurar clic en las listas
+        // Configurar clic en las listas para mostrar opciones
         listViewShoppingLists.setOnItemClickListener((parent, view, position, id) -> {
             String selectedListId = shoppingListIds.get(position);
             showOptionsDialog(selectedListId, shoppingListNames.get(position), position);
         });
     }
 
+    /**
+     * Carga las listas de compras desde Firebase para el usuario actual.
+     */
     private void loadShoppingLists() {
         shoppingListNames.clear();
         shoppingListIds.clear();
-        shoppingListRef.child(mAuth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "Por favor inicia sesión para ver tus listas", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Referencia al nodo del usuario actual en Firebase
+        shoppingListRef.child(currentUser.getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
                         String listName = snapshot.child("name").getValue(String.class);
                         String listId = snapshot.getKey();
+
+                        // Verificar que los datos no sean nulos
                         if (listName != null && listId != null) {
                             shoppingListNames.add(listName);
                             shoppingListIds.add(listId);
+                        } else {
+                            Log.e("ShoppingListActivity", "Lista inválida en Firebase: " + snapshot.toString());
                         }
                     }
                     adapter.notifyDataSetChanged();
@@ -90,11 +119,15 @@ public class ShoppingListActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
+                Log.e("ShoppingListActivity", "Error al cargar las listas: " + databaseError.getMessage());
                 Toast.makeText(ShoppingListActivity.this, "Error al cargar las listas", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
+    /**
+     * Muestra un cuadro de diálogo para crear una nueva lista de compras.
+     */
     private void showCreateListDialog() {
         final EditText input = new EditText(this);
         input.setHint("Nombre de la lista");
@@ -114,10 +147,21 @@ public class ShoppingListActivity extends AppCompatActivity {
                 .show();
     }
 
+    /**
+     * Crea una nueva lista de compras y la guarda en Firebase.
+     */
     private void createNewShoppingList(String listName) {
-        String listId = shoppingListRef.push().getKey();
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "Error: Usuario no autenticado", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String userId = currentUser.getUid();
+        String listId = shoppingListRef.child(userId).push().getKey();
+
         if (listId != null) {
-            shoppingListRef.child(mAuth.getCurrentUser().getUid()).child(listId).child("name").setValue(listName)
+            shoppingListRef.child(userId).child(listId).child("name").setValue(listName)
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             Toast.makeText(ShoppingListActivity.this, "Lista creada", Toast.LENGTH_SHORT).show();
@@ -129,25 +173,27 @@ public class ShoppingListActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Muestra un cuadro de diálogo con opciones para la lista seleccionada.
+     */
     private void showOptionsDialog(String listId, String listName, int position) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Opciones de lista: " + listName);
 
-        builder.setItems(new CharSequence[]{"Editar Productos", "Eliminar", "Compartir por Texto", "Atrás"},
+        builder.setItems(new CharSequence[]{"Ver productos", "Eliminar lista", "Atrás"},
                 (dialog, which) -> {
                     switch (which) {
                         case 0:
+                            // Ir a la actividad de productos
                             Intent intent1 = new Intent(ShoppingListActivity.this, ManageProductsActivity.class);
                             intent1.putExtra("LIST_ID", listId);
                             startActivity(intent1);
                             break;
                         case 1:
+                            // Eliminar la lista seleccionada
                             deleteShoppingList(listId, position);
                             break;
                         case 2:
-                            shareShoppingList(listId);
-                            break;
-                        case 3:
                             dialog.dismiss();
                             break;
                     }
@@ -156,8 +202,19 @@ public class ShoppingListActivity extends AppCompatActivity {
         builder.show();
     }
 
+    /**
+     * Elimina una lista de compras de Firebase.
+     */
     private void deleteShoppingList(String listId, int position) {
-        shoppingListRef.child(mAuth.getCurrentUser().getUid()).child(listId).removeValue()
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "Error: Usuario no autenticado", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String userId = currentUser.getUid();
+
+        shoppingListRef.child(userId).child(listId).removeValue()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         shoppingListNames.remove(position);
@@ -170,90 +227,93 @@ public class ShoppingListActivity extends AppCompatActivity {
                 });
     }
 
-    private void shareShoppingList(String listId) {
-        String currentUserId = mAuth.getCurrentUser().getUid();
+    /* *************************************************************** FASE EN BETA ***********************************************************************/
+    /**
+     * Muestra un cuadro de diálogo para seleccionar una lista y exportarla a otro usuario.
+     */
+    private void showSelectListDialog() {
+        ArrayList<String> listNames = new ArrayList<>();
+        ArrayList<String> listIds = new ArrayList<>();
 
-        // Añadir el ID del usuario actual en la lista compartida
-        shoppingListRef.child(currentUserId).child(listId).child("shared_with").child(currentUserId).setValue(true)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        String shareText = "ID de la lista: " + listId + "\n" +
-                                "Copia este ID y pégalo en la opción de 'Importar Lista' para verla.";
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null) {
+            Toast.makeText(this, "Error: Usuario no autenticado", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-                        Intent intent = new Intent(Intent.ACTION_SEND);
-                        intent.setType("text/plain");
-                        intent.putExtra(Intent.EXTRA_TEXT, shareText);
-                        startActivity(Intent.createChooser(intent, "Compartir lista"));
-                        Toast.makeText(ShoppingListActivity.this, "Lista compartida", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(ShoppingListActivity.this, "Error al compartir la lista", Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
+        String userId = currentUser.getUid();
 
-    private void showImportListDialog() {
-        final EditText input = new EditText(this);
-        input.setHint("ID de la lista");
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Importar lista de compras")
-                .setView(input)
-                .setPositiveButton("Importar", (dialog, which) -> {
-                    String listId = input.getText().toString().trim();
-                    if (!listId.isEmpty()) {
-                        importShoppingList(listId);
-                    } else {
-                        Toast.makeText(ShoppingListActivity.this, "Por favor, ingresa un ID válido", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
-                .show();
-    }
-
-    private void importShoppingList(String listId) {
-        String currentUserId = mAuth.getCurrentUser().getUid();
-
-        // Buscar la lista en la base de datos por el ID
-        shoppingListRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        shoppingListRef.child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                boolean listFound = false;
-
-                // Recorrer todos los usuarios para buscar la lista compartida
-                for (DataSnapshot userSnapshot : dataSnapshot.getChildren()) {
-                    if (userSnapshot.hasChild(listId)) {
-                        DataSnapshot listSnapshot = userSnapshot.child(listId);
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot listSnapshot : dataSnapshot.getChildren()) {
                         String listName = listSnapshot.child("name").getValue(String.class);
+                        String listId = listSnapshot.getKey();
 
-                        // Verificar si la lista está compartida con el usuario actual
-                        if (listName != null && listSnapshot.child("shared_with").hasChild(currentUserId)) {
-                            // Si la lista está compartida, importar la lista
-                            shoppingListRef.child(currentUserId).child(listId)
-                                    .setValue(listSnapshot.getValue())
-                                    .addOnCompleteListener(task -> {
-                                        if (task.isSuccessful()) {
-                                            Toast.makeText(ShoppingListActivity.this, "Lista importada: " + listName, Toast.LENGTH_SHORT).show();
-                                            loadShoppingLists();
-                                        } else {
-                                            Toast.makeText(ShoppingListActivity.this, "Error al importar la lista", Toast.LENGTH_SHORT).show();
-                                        }
-                                    });
-                            listFound = true;
-                            break;
+                        if (listName != null && listId != null) {
+                            listNames.add(listName);
+                            listIds.add(listId);
                         }
                     }
-                }
 
-                if (!listFound) {
-                    Toast.makeText(ShoppingListActivity.this, "ID de lista no encontrado o no tienes permiso para importarla", Toast.LENGTH_SHORT).show();
+                    if (!listNames.isEmpty()) {
+                        showListSelectionDialog(listNames, listIds);
+                    } else {
+                        Toast.makeText(ShoppingListActivity.this, "No tienes listas para compartir", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(ShoppingListActivity.this, "No se encontraron listas", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(ShoppingListActivity.this, "Error al buscar la lista", Toast.LENGTH_SHORT).show();
+                Log.e("ShoppingListActivity", "Error al cargar listas: " + databaseError.getMessage());
+                Toast.makeText(ShoppingListActivity.this, "Error al cargar listas", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
+    /**
+     * Muestra un cuadro de diálogo para seleccionar una lista específica.
+     */
+    private void showListSelectionDialog(ArrayList<String> listNames, ArrayList<String> listIds) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Selecciona una lista");
+
+        ArrayAdapter<String> listAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, listNames);
+
+        builder.setAdapter(listAdapter, (dialog, which) -> {
+            String selectedListId = listIds.get(which);
+            String selectedListName = listNames.get(which);
+
+            showSelectUserDialog(selectedListId, selectedListName);
+        });
+
+        builder.setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss());
+        builder.show();
+    }
+
+    /**
+     * Muestra un cuadro de diálogo para seleccionar un usuario al cual exportar la lista.
+     */
+    private void showSelectUserDialog(String listaaa, String email) {
+        getAllUsersJson();
+    }
+
+    private void getAllUsersJson() {
+        // Crear un AlertDialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("¡ FASE EN ALPHA !"); // Título del diálogo
+        builder.setMessage("La fase de compartir una lista a un usuario está en Alfa."); // Mensaje
+        builder.setPositiveButton("Aceptar", (dialog, which) -> {
+            // Acción al hacer clic en "Aceptar"
+            dialog.dismiss(); // Cierra el diálogo
+        });
+
+        // Mostrar el AlertDialog
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
 }
