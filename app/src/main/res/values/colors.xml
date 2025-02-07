@@ -13,8 +13,9 @@
     <color name="background_color">#000000</color>
     <color name="edit_text_border">#FFFFFF</color>
     <color name="delete_color">#FF0000</color>
-    <color name="checkbox_color">#0600FF</color>
+    <color name="checkbox_color">#FFD700</color>
     <color name="text_color">#FFFF</color>
+
 
 
 </resources>
